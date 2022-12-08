@@ -12,7 +12,7 @@
 
 ![Sol](./img/lab1.png)
 
-Solution script: [Lab1.py](./Lab1.py)
+**Solution script:** [Lab1.py](./Lab1.py)
 
 ## **Failing to handle unconventional input**
 
@@ -20,4 +20,4 @@ Solution script: [Lab1.py](./Lab1.py)
 
 ![Sol](./img/lab2.png)
 
-Solution script: [Lab2.py](./Lab2.py)
+**Solution script:** [Lab2.py](./Lab2.py)
