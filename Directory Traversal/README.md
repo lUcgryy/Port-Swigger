@@ -4,38 +4,22 @@
 
 </div>
 
-## **Lab 1:** File path traversal, simple case
+## **Lab:** File path traversal, traversal sequences stripped non-recursively
 
-**Solution:** Go to endpoint '/image?filename=../../../../../../../../../../etc/passwd' to read the content of the file
+**Goal:** retrieve the contents of the /etc/passwd file.
 
-**Solution script:** [Lab1.py](./Lab1.py)
+**Solution:** 
 
-## **Lab 2:** File path traversal, traversal sequences blocked with absolute path bypass
+1.  We discover the endpoint `/image` with parameter `filename`. This endpoint display the image based on `filename`
 
-**Solution:** Go to endpoint '/image?filename=/etc/passwd' to read the content of the file
+![](./img/1.png)
 
-**Solution script:** [Lab2.py](./Lab2.py)
+2.  This endpoint maybe vulnerable to Directory Traversal, so we try filename = `../../../../etc/passwd` and it does not work
 
-## **Lab 3:** File path traversal, traversal sequences stripped non-recursively
+![](./img/2.png)
 
-**Solution:** Go to endpoint '/image?filename=....//....//....//....//....//....//....//....//....//....//etc/passwd' to read the content of the file
+3.  Based on the title of the lab, the server removed the string `../` if it appear in the filename parameter, so the filename will actually is `/etc/passwd` which is not exist (because the path of the file maybe `/var/www/html/image/etc/passwd`). However, if the server remove the string once (non-recursively), we can try filename = `....//....//....//....//etc/passwd`, so if that is the case, the filename will be `../../../../etc/passwd` and we will be able to read the content of this file
+
+![](./img/3.png)
 
 **Solution script:** [Lab3.py](./Lab3.py)
-
-## **Lab 4:** File path traversal, traversal sequences stripped with superfluous URL-decode
-
-**Solution:** Go to endpoint '/image?filename=../../../../../../../../../../etc/passwd' (the value of the filename parameter have to be URL Encoded two times) to read the content of the file
-
-**Solution script:** [Lab4.py](./Lab4.py)
-
-## **Lab 5:** File path traversal, validation of start of path
-
-**Solution:** Go to endpoint '/image?filename=/var/www/images/../../../etc/passwd' to read the content of the file
-
-**Solution script:** [Lab5.py](./Lab5.py)
-
-## **Lab 6:** File path traversal, validation of file extension with null byte bypass
-
-**Solution:** Go to endpoint '/image?filename=../../../etc/passwd%00.png' to read the content of the file
-
-**Solution script:** [Lab6.py](./Lab6.py)

