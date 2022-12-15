@@ -18,5 +18,6 @@ This repository contains writeups for the labs in the website: [portswigger.net]
 ## **[11. Cross-site Scripting](./Cross-site%20Scripting/)**
 ## **[12. CSRF](./CSRF/)**
 ## **[13. CORS](./CORS/)**
-
-
+## **[14. Clickjacking](./Clickjacking/)**
+## **[15. DOM-based vulnerbilities](./DOM-based%20vulnerbilities/)**
+## **[16. Web Socket](./Web%20Socket/)**
