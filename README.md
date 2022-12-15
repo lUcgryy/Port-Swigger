@@ -10,3 +10,9 @@ This repository contains writeups for the labs in the website: [portswigger.net]
 ## **[3. Directory Traversal](./Directory%20Traversal/)**
 ## **[4. OS Command Injection](./Directory%20Traversal/)**
 ## **[5. Business Logic Vulnerability](./Business%20Logic%20Vulnerabilities/)**
+## **[6. Information Disclosure](./Information%20Disclosure/)**
+## **[7. Access Control](./Access%20Control/)**
+## **[8. File Upload Vulnerabilities](./File%20Upload%20Vulnerabilities/)**
+## **[9. SSRF](./SSRF/)**
+## **[10. XXE Injection](./XXE%20Injection/)**
+

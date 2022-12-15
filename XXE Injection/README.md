@@ -24,3 +24,7 @@
 </svg>
 ```
 Upload this file as [exploit.svg](./Payload/exploit.svg)
+
+3.  Viewing the avatar, we get the content of the ``/etc/hostname` file. We have solved the lab
+
+![](./img/2.png)
