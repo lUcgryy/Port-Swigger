@@ -15,4 +15,8 @@ This repository contains writeups for the labs in the website: [portswigger.net]
 ## **[8. File Upload Vulnerabilities](./File%20Upload%20Vulnerabilities/)**
 ## **[9. SSRF](./SSRF/)**
 ## **[10. XXE Injection](./XXE%20Injection/)**
+## **[11. Cross-site Scripting](./Cross-site%20Scripting/)**
+## **[12. CSRF](./CSRF/)**
+## **[13. CORS](./CORS/)**
+
 
