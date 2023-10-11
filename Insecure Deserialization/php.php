@@ -1,0 +1,6 @@
+<?php
+$string = 'TmFtZSAgICAgICAgICAgOiBTeW1mb255L1JDRTEKVmVyc2lvbiAgICAgICAgOiB2My4xLjAgPD0gdjMuNC4zNApUeXBlICAgICAgICAgICA6IFJDRSAoQ29tbWFuZCkKVmVjdG9yICAgICAgICAgOiBfX2Rlc3RydWN0CkluZm9ybWF0aW9ucyAgIDogCkV4ZWN1dGVzIGdpdmVuIGNvbW1hbmQgdGhyb3VnaCBwcm9jX29wZW4oKQoKRVJST1I6IEludmFsaWQgYXJndW1lbnRzIGZvciB0eXBlICJSQ0UgKENvbW1hbmQpIiAKLi9waHBnZ2MgU3ltZm9ueS9SQ0UxIDxjb21tYW5kPgo=';
+$key = 'ag64iwc3c810d3s6077221rquwfdzp49';
+$signature = hash_hmac('sha1', $string, $key);
+echo $signature;
+?>
